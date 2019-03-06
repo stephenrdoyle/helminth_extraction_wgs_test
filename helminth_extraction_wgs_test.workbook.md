@@ -6,7 +6,7 @@
 2. [Mapping](#mapping)
 
 
-# 00 - Project overview
+## 00 - Project overview
 
 The aim of this work is to....
 
@@ -14,8 +14,8 @@ The aim of this work is to....
 
 
 
-# 01 - Project setup <a name="setup"></a>
-## Setup a working environment for the analysis.
+## 01 - Project setup <a name="setup"></a>
+### Setup a working environment for the analysis.
 ``` shell
 mkdir $HOME/HELMINTH_EXTRACTION_WGS
 cd $HOME/HELMINTH_EXTRACTION_WGS
@@ -24,7 +24,7 @@ cd $HOME/HELMINTH_EXTRACTION_WGS
 mkdir 00_SCRIPTS 01_REFERENCES 02_RAWDATA 03_MAPPING 04_ANALYSIS
 ```
 
-## Reference genomes
+### Reference genomes
 Get the reference genomes for mapping
 ```
 cd 01_REFERENCES
@@ -58,7 +58,7 @@ for i in *.gz; do gunzip ${i} ;  done
 
 ```
 
-## Raw data
+### Raw data
 Get the raw sequencing data for the analysis. All data will be available for download from ENA, links to which are provided in the metadata table in which the samples are described.
 Be aware the the steps in the next section may not work exactly as stated, as it is based on how I retrived the Sanger environment. However,
 at the end of this subsection, it should be pretty clear how the data needs to be formatted for the mapping steps.
