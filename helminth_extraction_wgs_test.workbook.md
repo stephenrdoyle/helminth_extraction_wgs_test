@@ -62,6 +62,7 @@ for i in *.gz; do gunzip ${i} ;  done
 I use this format for a few different steps in my workflows. It is simple a tab delimited file containing the sample name, and the sequencing lane ID. Samples with more
 than a single sequencing lane will be represented twice, but overall, each line of the file will be unique. At Sanger, we have a pathfind script that can be looped through to retrieve the IDs, and then these can be renames as appropriate.
 
+```shell
 Example is:
 Hc_L1_chip_1 | 21094_1#1
 Hc_L1_chip_2 | 21094_1#2
@@ -69,7 +70,7 @@ Hc_L1_chip_3 | 21094_1#3
 Hc_Egg_chip_1	21094_1#4
 Hc_Egg_chip_2	21094_1#5
 Hc_Egg_chip_3	21094_1#6
-
+```
 
 ### Raw data
 Get the raw sequencing data for the analysis. All data will be available for download from ENA, links to which are provided in the metadata table in which the samples are described.
