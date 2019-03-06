@@ -63,9 +63,9 @@ I use this format for a few different steps in my workflows. It is simple a tab 
 than a single sequencing lane will be represented twice, but overall, each line of the file will be unique. At Sanger, we have a pathfind script that can be looped through to retrieve the IDs, and then these can be renames as appropriate.
 
 Example is:
-Hc_L1_chip_1	21094_1#1\n
-Hc_L1_chip_2	21094_1#2\n
-Hc_L1_chip_3	21094_1#3\n
+Hc_L1_chip_1 | 21094_1#1\n
+Hc_L1_chip_2 | 21094_1#2\n
+Hc_L1_chip_3 | 21094_1#3\n
 Hc_Egg_chip_1	21094_1#4\n
 Hc_Egg_chip_2	21094_1#5\n
 Hc_Egg_chip_3	21094_1#6\n
