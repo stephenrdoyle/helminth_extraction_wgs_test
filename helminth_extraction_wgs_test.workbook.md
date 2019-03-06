@@ -17,8 +17,43 @@ The aim of this work is to....
 ## 01 - Project setup <a name="setup"></a>
 
 ``` shell
-mkdir $PWD/HELMINTH_EXTRACTION_WGS
-cd $PWD/HELMINTH_EXTRACTION_WGS
+mkdir $HOME/HELMINTH_EXTRACTION_WGS
+cd $HOME/HELMINTH_EXTRACTION_WGS
 
-# make workign directories
+# make working directories
 mkdir 00_SCRIPTS 01_REFERENCES 02_RAWDATA 03_MAPPING 04_ANALYSIS
+
+
+#### Get the reference genomes for mapping
+cd 01_REFERENCES
+
+# a_canium
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/ancylostoma_caninum/PRJNA72585/ancylostoma_caninum.PRJNA72585.WBPS12.genomic.fa.gz
+
+# d_medinensis
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/dracunculus_medinensis/PRJEB500/dracunculus_medinensis.PRJEB500.WBPS12.genomic.fa.gz
+
+# h_contortus
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/haemonchus_contortus/PRJEB506/haemonchus_contortus.PRJEB506.WBPS12.genomic.fa.gz
+
+# s_mansoni
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/schistosoma_mansoni/PRJEA36577/schistosoma_mansoni.PRJEA36577.WBPS12.genomic.fa.gz
+
+# a_dissimilis - note, we dont have a reference genome for this species, so using ascaris_lumbricoides
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/ascaris_lumbricoides/PRJEB4950/ascaris_lumbricoides.PRJEB4950.WBPS12.genomic.fa.gz
+
+# d_immitis
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/dirofilaria_immitis/PRJEB1797/dirofilaria_immitis.PRJEB1797.WBPS12.genomic.fa.gz
+
+# s_stercoralis
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/strongyloides_stercoralis/PRJEB528/strongyloides_stercoralis.PRJEB528.WBPS12.genomic.fa.gz
+
+# t_muris
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS12/species/trichuris_muris/PRJEB126/trichuris_muris.PRJEB126.WBPS12.genomic.fa.gz
+
+# unzip
+for i in *.gz; do gunzip ${i} ;  done
+
+
+
+```
