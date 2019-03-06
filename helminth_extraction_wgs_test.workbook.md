@@ -1,12 +1,12 @@
 # DNA extraction and whole genome sequencing of single egg and larval samples from helminths
 
-## Table of contents
+# Table of contents
 0. [Project overview](#overview)
 1. [Projects setup](#setup)
 2. [Mapping](#mapping)
 
 
-## 00 - Project overview
+# 00 - Project overview
 
 The aim of this work is to....
 
@@ -59,6 +59,6 @@ for i in *.gz; do gunzip ${i} ;  done
 ```
 
 ## Raw data
-Get the raw sequencing data for the analysis. All data will be available for download from ENA, links to which are provided in the metadata table in which the samples are described. 
+Get the raw sequencing data for the analysis. All data will be available for download from ENA, links to which are provided in the metadata table in which the samples are described.
 Be aware the the steps in the next section may not work exactly as stated, as it is based on how I retrived the Sanger environment. However,
 at the end of this subsection, it should be pretty clear how the data needs to be formatted for the mapping steps.
