@@ -233,6 +233,95 @@ for i in *out; do
 The run_bwamem_splitter script automatically determiend s flagstat and bamstats for the bam files in each mapping job. We'll summarise all of that informaiton using multiqc
 
 ```shell
-cd ${WORKING_DIR}/04_analysis
+cd ${WORKING_DIR}/04_ANALYSIS
 
 multiqc ${WORKING_DIR}/03_MAPPING
+
+
+
+
+
+echo -e "sample_name\tspecies\tlifestage\textraction\tlibrary" > categories.list
+
+cut -f1 multiqc_data/multiqc_bamtools_stats.txt  |\
+  sed '1d' |\
+  awk -F'[_]' '{print $1"_"$2"_"$3"_"$4"_"$5,$1,$2,$3,$4}' OFS="\t" >> categories.list
+
+paste categories.list multiqc_data/multiqc_bamtools_stats.txt > multiqc_bamtools_stats.w_categories.txt
+
+sample_name	species	lifestage	extraction	library	Sample	mapped_reads	mapped_reads_pctforward_strand_pct	read_2	read_1	duplicates	both_mapped	reverse_strand_pct	duplicates_pct	reverse_strand	forward_strand	failed_qc_pct	both_mapped_pct	failed_qc	singletons	total_reads	singletons_pct	paired_end	paired_end_pct
+
+
+```R  
+R-3.5.0
+# load required libraries
+library(ggplot2)
+library(patchwork)
+library(dplyr)
+
+# read in data
+data <- read.table("multiqc_bamtools_stats.w_categories.txt",header=T,na.strings="",comment.char="")
+
+# Figure 1
+
+hcsm_data <- data[data$species=="SM" | data$species=="HC" ,]
+
+mapplot <- ggplot(hcsm_data,aes(x=lifestage,y=mapped_reads_pct,col=extraction,fill=extraction))+
+               geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+               #geom_point(position = position_dodge(preserve = "single"))+
+               ylim(0,100)+
+               labs(x="Life stage",y="Mapped Read (% of total reads)",title="Library preparation test: Mapped reads")+
+               theme_bw()+
+               facet_grid(.~species,drop = TRUE,scales = "free", space = "free")
+
+
+dupplot <- ggplot(hcsm_data,aes(x=lifestage,y=duplicates_pct,col=extraction,fill=extraction))+
+               geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+               #geom_point(position=position_dodge(width = 0.75))+
+               ylim(0,100)+
+               labs(x="Life stage",y="Duplicate Read (% of total reads)",title="Library preparation test: Duplicate reads")+
+               theme_bw()+
+               facet_grid(.~species,drop = TRUE,scales = "free", space = "free")
+
+mapplot + dupplot + plot_layout(ncol=1)
+ggsave("Figure1_stats_by_prep_hc_sm.pdf",useDingbats=FALSE)
+ggsave("Figure1_stats_by_prep_hc_sm.png")
+
+# Figure 2
+data_CGP <- data[data$extraction=="CGP",]
+data_DM <- data[data$extraction=="NXT" & data$species=="DM",]
+data_species<- bind_rows(data_CGP, data_DM)
+
+mapplot <- ggplot(data_species,aes(x=species,y=mapped_reads_pct,col=lifestage,fill=lifestage))+
+               geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+               #geom_point(position=position_dodge(width = 0.75),size=1)+
+               ylim(0,100)+
+               labs(x="Species",y="Mapped Read (% of total reads)",title="Species test: Mapped reads")+
+               theme_bw()+
+               facet_grid(.~species,drop = TRUE,scales = "free", space = "free")
+
+
+dupplot <- ggplot(data_species,aes(x=species,y=duplicates_pct,col=lifestage,fill=lifestage))+
+               geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+               #geom_point(position=position_dodge(width = 0.75))+
+               ylim(0,100)+
+               labs(x="Species",y="Mapped Read (% of total reads)",title="Species test: Duplicate reads")+
+               theme_bw()+
+               facet_grid(.~species,drop = TRUE,scales = "free", space = "free")
+
+mapplot + dupplot + plot_layout(ncol=1)
+ggsave("Figure2_Stats_by_species.pdf",useDingbats=FALSE)
+ggsave("Figure2_Stats_by_species.png")
+```
+
+
+- Copy to local dir - run this from local machine
+```shell
+scp sd21@pcs5.internal.sanger.ac.uk:/nfs/users/nfs_s/sd21/lustre118_link/hc/HELMINTH_EXTRACTION_WGS/04_ANALYSIS/*.png ~/Documents/workbook/helminth_extraction_wgs_test/04_analysis
+```
+
+![Figure1_Stats_by_prep](04_analysis/Figure1_stats_by_prep_hc_sm.png)
+Figure1_stats_by_prep_hc_sm.png
+
+![Figure2_Stats_by_species](04_analysis/Figure2_Stats_by_species.png)
+Figure2_Stats_by_species.png
