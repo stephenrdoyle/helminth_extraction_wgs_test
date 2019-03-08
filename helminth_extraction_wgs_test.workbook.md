@@ -235,12 +235,10 @@ The run_bwamem_splitter script automatically determiend s flagstat and bamstats 
 ```shell
 cd ${WORKING_DIR}/04_ANALYSIS
 
+# run Multiqc
 multiqc ${WORKING_DIR}/03_MAPPING
 
-
-
-
-
+# extract relevant information from the multiqc output, combining it with some variables based on the metadata
 echo -e "sample_name\tspecies\tlifestage\textraction\tlibrary" > categories.list
 
 cut -f1 multiqc_data/multiqc_bamtools_stats.txt  |\
@@ -248,9 +246,11 @@ cut -f1 multiqc_data/multiqc_bamtools_stats.txt  |\
   awk -F'[_]' '{print $1"_"$2"_"$3"_"$4"_"$5,$1,$2,$3,$4}' OFS="\t" >> categories.list
 
 paste categories.list multiqc_data/multiqc_bamtools_stats.txt > multiqc_bamtools_stats.w_categories.txt
+```
 
-sample_name	species	lifestage	extraction	library	Sample	mapped_reads	mapped_reads_pctforward_strand_pct	read_2	read_1	duplicates	both_mapped	reverse_strand_pct	duplicates_pct	reverse_strand	forward_strand	failed_qc_pct	both_mapped_pct	failed_qc	singletons	total_reads	singletons_pct	paired_end	paired_end_pct
 
+### Generate some plots in R
+The commands below generate two figures, the first to highlight the differences in the extraction approaches trialled, and the second, to show the variation between the different species tested. The key metrics will the the proportion of reads mapped to the genome, and the proportion of reads that are identified as duplicates.
 
 ```R  
 R-3.5.0
@@ -260,10 +260,10 @@ library(patchwork)
 library(dplyr)
 
 # read in data
-data <- read.table("multiqc_bamtools_stats.w_categories.txt",header=T,na.strings="",comment.char="")
+data <- read.table("multiqc_bamtools_stats.w_categories.txt", header=T, na.strings="", comment.char="")
 
 # Figure 1
-
+# subset the data to extract the H.contortus and S.mansoni data. We only really tested these species with mutliple kits
 hcsm_data <- data[data$species=="SM" | data$species=="HC" ,]
 
 mapplot <- ggplot(hcsm_data,aes(x=lifestage,y=mapped_reads_pct,col=extraction,fill=extraction))+
@@ -283,11 +283,13 @@ dupplot <- ggplot(hcsm_data,aes(x=lifestage,y=duplicates_pct,col=extraction,fill
                theme_bw()+
                facet_grid(.~species,drop = TRUE,scales = "free", space = "free")
 
+# combine plots with patchwork, and save output
 mapplot + dupplot + plot_layout(ncol=1)
 ggsave("Figure1_stats_by_prep_hc_sm.pdf",useDingbats=FALSE)
 ggsave("Figure1_stats_by_prep_hc_sm.png")
 
 # Figure 2
+# subset data to collect on the CGP libraries. However, D.medinesis was prepped with nexttek, so want to show that too and compare. Will make a not in the writeup that this was in fact different.
 data_CGP <- data[data$extraction=="CGP",]
 data_DM <- data[data$extraction=="NXT" & data$species=="DM",]
 data_species<- bind_rows(data_CGP, data_DM)
@@ -309,6 +311,7 @@ dupplot <- ggplot(data_species,aes(x=species,y=duplicates_pct,col=lifestage,fill
                theme_bw()+
                facet_grid(.~species,drop = TRUE,scales = "free", space = "free")
 
+# combine plots with patchwork, and save output
 mapplot + dupplot + plot_layout(ncol=1)
 ggsave("Figure2_Stats_by_species.pdf",useDingbats=FALSE)
 ggsave("Figure2_Stats_by_species.png")
@@ -320,8 +323,9 @@ ggsave("Figure2_Stats_by_species.png")
 scp sd21@pcs5.internal.sanger.ac.uk:/nfs/users/nfs_s/sd21/lustre118_link/hc/HELMINTH_EXTRACTION_WGS/04_ANALYSIS/*.png ~/Documents/workbook/helminth_extraction_wgs_test/04_analysis
 ```
 
+## Figures
 ![Figure1_Stats_by_prep](04_analysis/Figure1_stats_by_prep_hc_sm.png)
-Figure1_stats_by_prep_hc_sm.png
+Figure 1. Comparison of library preparation approaches on *H. contortus* Egg, Egg(frozen), and L1 stages, and *S. mansoni* miracidia. The top plot presents the percentage of reads that mapped to each reference genome, and the bottom plot presents the proportion of duplicate reads identified. Boxplots are coloured by the library preparation approach used.
 
 ![Figure2_Stats_by_species](04_analysis/Figure2_Stats_by_species.png)
-Figure2_Stats_by_species.png
+Figure 2. Comparison of library preparation from multiple life stages of 8 helminth species. All libraries were prepared with the CGP approach, except for *D. medinensis*, which was prepared with Nexttec that we present for comparison. As in Figure 1, the top plot presents the percentage of reads that mapped to each reference genome, and the bottom plot presents the proportion of duplicate reads identified. Boxplots are coloured by the life stage assayed.
