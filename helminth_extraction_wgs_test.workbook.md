@@ -9,7 +9,7 @@
 
 ## 00 - Project overview
 
-The aim of this work is to....
+The aim of this work is to test a number of low input DNA extraction approaches for individual helminth samples stored on FTA cards, followed by low input library preparation without WGA, and whole-genome sequencing.
 
 
 
@@ -170,12 +170,7 @@ done < ${WORKING_DIR}/02_RAWDATA/HC_samples_lanes.list &
 
 sleep 5
 
-while read NAME LANE; do \
-~sd21/bash_scripts/run_bwamem_splitter ${NAME}_${LANE} \
-${WORKING_DIR}/01_REFERENCES/schistosoma_mansoni.PRJEA36577.WBPS12.genomic.fa \
-${WORKING_DIR}/02_RAWDATA/${LANE}_1.fastq.gz \
-${WORKING_DIR}/02_RAWDATA/${LANE}_2.fastq.gz; \
-done < ${WORKING_DIR}/02_RAWDATA/SM_samples_lanes.list &
+/
 
 sleep 5
 
@@ -329,3 +324,9 @@ Figure 1. Comparison of library preparation approaches on *H. contortus* Egg, Eg
 
 ![Figure2_Stats_by_species](04_analysis/Figure2_Stats_by_species.png)
 Figure 2. Comparison of library preparation from multiple life stages of 8 helminth species. All libraries were prepared with the CGP approach, except for *D. medinensis*, which was prepared with Nexttec that we present for comparison. As in Figure 1, the top plot presents the percentage of reads that mapped to each reference genome, and the bottom plot presents the proportion of duplicate reads identified. Boxplots are coloured by the life stage assayed.
+
+
+
+while read NAME LANE; do pf qc --id ${LANE} --type lane >> tmp ; done < samples_lanes.list
+
+while read NAME; do echo $NAME | cut -f16 -d"/" ; cat $NAME | head -n3 | tail -n1 | cut -f1; done < tmp
