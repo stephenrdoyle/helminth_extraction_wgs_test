@@ -253,9 +253,14 @@ R-3.5.0
 library(ggplot2)
 library(patchwork)
 library(dplyr)
-
+library(psych)
 # read in data
 data <- read.table("multiqc_bamtools_stats.w_categories.txt", header=T, na.strings="", comment.char="")
+
+# descriptive statistics
+
+describeBy(data,group=data$extraction)
+describeBy(data,list(data$extraction,data$species),digits=2)
 
 # Figure 1
 # subset the data to extract the H.contortus and S.mansoni data. We only really tested these species with mutliple kits
@@ -315,7 +320,7 @@ ggsave("Figure2_Stats_by_species.png")
 
 - Copy to local dir - run this from local machine
 ```shell
-scp sd21@pcs5.internal.sanger.ac.uk:/nfs/users/nfs_s/sd21/lustre118_link/hc/HELMINTH_EXTRACTION_WGS/04_ANALYSIS/*.png ~/Documents/workbook/helminth_extraction_wgs_test/04_analysis
+scp sd21@pcs5.internal.sanger.ac.uk:/nfs/users/nfs_s/sd21/lustre118_link/hc/HELMINTH_EXTRACTION_WGS/04_ANALYSIS/Figure* ~/Documents/workbook/helminth_extraction_wgs_test/04_analysis
 ```
 
 ## Figures
@@ -329,4 +334,4 @@ Figure 2. Comparison of library preparation from multiple life stages of 8 helmi
 
 while read NAME LANE; do pf qc --id ${LANE} --type lane >> tmp ; done < samples_lanes.list
 
-while read NAME; do echo $NAME | cut -f16 -d"/" ; cat $NAME | head -n3 | tail -n1 | cut -f1; done < tmp
+while read NAME; do name=$(echo $NAME | cut -f16 -d"/") ; data=$(cat $NAME | head -n3 | tail -n1 | cut -f1) ; printf "$name\t$data\n"; done < tmp
