@@ -331,7 +331,65 @@ Figure 1. Comparison of library preparation approaches on *H. contortus* Egg, Eg
 Figure 2. Comparison of library preparation from multiple life stages of 8 helminth species. All libraries were prepared with the CGP approach, except for *D. medinensis*, which was prepared with Nexttec that we present for comparison. As in Figure 1, the top plot presents the percentage of reads that mapped to each reference genome, and the bottom plot presents the proportion of duplicate reads identified. Boxplots are coloured by the life stage assayed.
 
 
-
+```shell
+# need to doublecheck why I have put this here...???
 while read NAME LANE; do pf qc --id ${LANE} --type lane >> tmp ; done < samples_lanes.list
 
 while read NAME; do name=$(echo $NAME | cut -f16 -d"/") ; data=$(cat $NAME | head -n3 | tail -n1 | cut -f1) ; printf "$name\t$data\n"; done < tmp
+```
+
+
+
+# Post review
+
+# plots
+```R
+# libraries
+library(ggplot2)
+library(patchwork)
+
+# get data
+data<-read.table("Desktop/egg_test.txt", na.strings = "na",header=T)
+
+cgp <- data[data$Extraction_kit_ID=="CGP",]
+
+hc <- data[data$Species_ID=="HC",]
+hc_egg <- hc[hc$Lifestage_ID=="EGG",]
+
+sm <- data[data$Species_ID=="SM",]
+
+hc_sm <-rbind(hc,sm)
+
+
+
+# new figure 1
+hcsm_conc_boxplot<-ggplot(hc_sm,aes(Extraction_kit_ID,LIB_QC_ng_ul,fill=Lifestage_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(0,12)+
+  labs(x="Extraction kit ID",y="Sequencing library concentration (ng/ul)")+
+  theme_bw()+
+  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free")
+hcsm_conc_boxplot
+
+# new figure 2
+conc_v_mapped_x_kit_plot<-ggplot(hc_sm,aes((LIB_QC_ng_ul),mapped_read_pc,col=Extraction_kit_ID,shape=Lifestage_ID))+
+  geom_point()+
+  ylim(0,100)+
+  labs(y="Mapped on-target reads (%)",x="Sequencing library concentration (ng/ul)")+
+  theme_bw()+
+  geom_vline(xintercept=0.5,col="grey60",linetype='dashed')+
+  facet_grid(.~Species_ID)
+
+conc_v_mapped_x_contam_plot<-ggplot(hc_sm, aes((LIB_QC_ng_ul),mapped_read_pc,col=100-kraken_unassigned_pc,shape=Lifestage_ID))+
+  geom_point()+
+  ylim(0,100)+
+  labs(y="Mapped on-target reads (%)",x="Sequencing library concentration (ng/ul)")+
+  theme_bw()+scale_color_viridis_c()+
+  geom_vline(xintercept=0.5,col="grey60",linetype='dashed')+
+  facet_grid(.~Species_ID)
+
+conc_v_mapped_x_kit_plot +
+  conc_v_mapped_x_contam_plot +
+  plot_layout(ncol = 1)
+
+ ```
