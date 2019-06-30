@@ -340,9 +340,7 @@ while read NAME; do name=$(echo $NAME | cut -f16 -d"/") ; data=$(cat $NAME | hea
 
 
 
-# Post review
-
-# plots
+# Revision of data and figures for helminth extraction manuscript
 ```R
 # libraries
 library(ggplot2)
@@ -351,45 +349,242 @@ library(patchwork)
 # get data
 data<-read.table("Desktop/egg_test.txt", na.strings = "na",header=T)
 
-cgp <- data[data$Extraction_kit_ID=="CGP",]
-
+# subset data
+#--- for figure 1
 hc <- data[data$Species_ID=="HC",]
-hc_egg <- hc[hc$Lifestage_ID=="EGG",]
-
 sm <- data[data$Species_ID=="SM",]
-
 hc_sm <-rbind(hc,sm)
 
+#--- for figure 2
+cgp <- data[data$Extraction_kit_ID=="CGP",]
+
+#--- for Supplement
+dm <- data[data$Species_ID=="DM",]
+
+# generate some labels to replace coded names
+species.labels <- c("A. caninum","A. dissimilis","D. immitis","D. medinensis","H. contortus", "S. mansoni","S. stercoralis","T. muris" )
+names(species.labels) <- c("AC","AD","DI","DM","HC","SM","SS","TM")
+
+lifestage.labels <- c("Egg","Egg (bleached)", "Egg (frozen)", "Free living adult", "L1", "L3","Microfilaria","Miracidia")
+names(lifestage.labels) <- c("EGG","EGGb", "EGGf", "FL", "LS1","LS3", "MFL", "MIR")
 
 
-# new figure 1
+
+# Generate new figures
+
+# New figure 1
+
 hcsm_conc_boxplot<-ggplot(hc_sm,aes(Extraction_kit_ID,LIB_QC_ng_ul,fill=Lifestage_ID))+
   geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
   ylim(0,12)+
-  labs(x="Extraction kit ID",y="Sequencing library concentration (ng/ul)")+
+  labs(x="Extraction kit ID",
+       y="Sequencing library concentration (ng/ul)",
+       fill="Lifestage")+
   theme_bw()+
-  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free")
+  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(Species_ID = species.labels))
 hcsm_conc_boxplot
 
+ggsave("Figure_1.pdf",useDingbats=FALSE)
+ggsave("Figure_1.png")
+
 # new figure 2
-conc_v_mapped_x_kit_plot<-ggplot(hc_sm,aes((LIB_QC_ng_ul),mapped_read_pc,col=Extraction_kit_ID,shape=Lifestage_ID))+
+#--- plot mapped vs library concentration x lifestage (shape) x kit (colour)
+conc_v_mapped_x_kit_plot<-ggplot(hc_sm,aes(log10(LIB_QC_ng_ul),mapped_read_pc,col=Extraction_kit_ID,shape=Lifestage_ID))+
   geom_point()+
+  geom_vline(xintercept=log10(0.25),col="grey60",linetype='dashed')+
   ylim(0,100)+
-  labs(y="Mapped on-target reads (%)",x="Sequencing library concentration (ng/ul)")+
+  labs(x="Sequencing library concentration (log10[ng/ul])",
+       y="Mapped on-target reads (%)",
+       col="Extraction kit",
+       shape="Life stage")+
   theme_bw()+
-  geom_vline(xintercept=0.5,col="grey60",linetype='dashed')+
-  facet_grid(.~Species_ID)
+  facet_grid(.~Species_ID,labeller = labeller(Species_ID = species.labels))
 
-conc_v_mapped_x_contam_plot<-ggplot(hc_sm, aes((LIB_QC_ng_ul),mapped_read_pc,col=100-kraken_unassigned_pc,shape=Lifestage_ID))+
+#--- plot mapped vs library concentration x lifestage (shape) x contamination (colour)
+conc_v_mapped_x_contam_plot<-ggplot(hc_sm, aes(log10(LIB_QC_ng_ul),mapped_read_pc,col=100-kraken_unassigned_pc,shape=Lifestage_ID))+
   geom_point()+
+  geom_vline(xintercept=log10(0.25),col="grey60",linetype='dashed')+
   ylim(0,100)+
-  labs(y="Mapped on-target reads (%)",x="Sequencing library concentration (ng/ul)")+
-  theme_bw()+scale_color_viridis_c()+
-  geom_vline(xintercept=0.5,col="grey60",linetype='dashed')+
-  facet_grid(.~Species_ID)
+  labs(x="Sequencing library concentration (log10[ng/ul])",
+       y="Mapped on-target reads (%)",
+       col="Contamination (%)",
+       shape="Life stage")+
+  guides(shape = FALSE)+ # remove the lifestage shapes in the 2nd plots, as it is already present in the first part of the figure
+  theme_bw()+
+  scale_color_viridis_c()+
+  facet_grid(.~Species_ID,labeller = labeller(Species_ID = species.labels))
 
+#--- patchwork to bring the two plots together
 conc_v_mapped_x_kit_plot +
   conc_v_mapped_x_contam_plot +
   plot_layout(ncol = 1)
 
- ```
+ggsave("Figure_2.pdf",useDingbats=FALSE)
+ggsave("Figure_2.png")
+
+# New figure 3
+
+cgp <- data[data$Extraction_kit_ID=="CGP",]
+
+conc_v_mapped_x_species_lifestage <- ggplot(cgp,aes(log10(LIB_QC_ng_ul),mapped_read_pc,col=Lifestage_ID))+
+  geom_point()+
+  ylim(0,100)+
+  labs(title="A",
+       x="Sequencing library concentration (log10[ng/ul])",
+       y="Mapped on-target reads (%)",
+       col="Extraction kit",
+       shape="Life stage")+
+  theme_bw()+
+  geom_vline(xintercept=log10(0.25),col="grey60",linetype='dashed')+
+  facet_grid(.~Species_ID,labeller = labeller(Species_ID = species.labels))
+
+conc_v_mapped_x_species_contam <- ggplot(cgp, aes(log10(LIB_QC_ng_ul),mapped_read_pc,col=100-kraken_unassigned_pc))+
+  geom_point()+
+  ylim(0,100)+
+  labs(title="B",
+       x="Sequencing library concentration (log10[ng/ul])"
+       y="Mapped on-target reads (%)",
+       col="Contamination (%)",
+       shape="Life stage")+
+  theme_bw()+scale_color_viridis_c()+
+  geom_vline(xintercept=log10(0.25),col="grey60",linetype='dashed')+
+  facet_grid(.~Species_ID,labeller = labeller(Species_ID = species.labels))+
+  guides(shape = FALSE)
+
+#--- patchwork to bring the two plots together
+conc_v_mapped_x_species_lifestage +
+  conc_v_mapped_x_species_contam +  
+  plot_layout(ncol=1)
+
+ggsave("Figure_3.pdf",useDingbats=FALSE)
+ggsave("Figure_3.png")
+
+# Supplementary Figures
+# New supplementary figure 1 - old figure 1
+#--- box plot showing mapped reads per lifestage per extraction kit for H. contortus and S. mansoni
+mapped_kit_lifestage <- ggplot(hc_sm,aes(x=Lifestage_ID,y=mapped_read_pc,col=Extraction_kit_ID,fill=Extraction_kit_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(-10,100)+
+  labs(title="A",
+       x="Life stage",
+       y="Mapped on-target reads (%)",
+       fill="Extraction kit")+
+  guides(col = FALSE)+
+  theme_bw()+
+  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(Species_ID = species.labels))
+
+#--- box plot showing duplicate reads per lifestage per extraction kit for H. contortus and S. mansoni  
+duplicates_kit_lifestage <- ggplot(hc_sm,aes(x=Lifestage_ID,y=duplicate_reads_pc,col=Extraction_kit_ID,fill=Extraction_kit_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(0,100)+
+  labs(title="B",
+       x="Life stage",
+       y="Mapped on-target reads (%)",
+       fill="Extraction kit")+
+  theme_bw()+
+  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(Species_ID = species.labels))+
+  guides(col = FALSE)
+
+#--- patchwork to bring the two plots together
+mapped_kit_lifestage +
+  duplicates_kit_lifestage +
+  plot_layout(ncol=1)
+
+ggsave("Figure_S1.pdf",useDingbats=FALSE)
+ggsave("Figure_S1.png")
+
+
+# New supplementary figure 2 - old figure 2
+#--- box plot showing mapped reads per lifestage per species
+mapped_species_lifestage <- ggplot(cgp,aes(x=Species_ID,y=mapped_read_pc,col=Lifestage_ID,fill=Lifestage_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(0,100)+
+  labs(title="A",
+       x="Species",
+       y="Mapped on-target reads (%)",
+       fill="Life stage")+
+  theme_bw()+
+  facet_grid(.~Species_ID, drop = TRUE, scales = "free", space = "free", labeller = labeller(Species_ID = species.labels))+
+  guides(col = FALSE)
+
+#--- box plot showing duplicate reads per lifestage per species
+mapped_species_duplicates <- ggplot(cgp,aes(x=Species_ID,y=duplicate_reads_pc,col=Lifestage_ID,fill=Lifestage_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(0,100)+
+  labs(title="B",
+       x="Species",
+       y="Duplicate reads (%)",
+       fill="Life stage")+
+  theme_bw()+
+  facet_grid(.~Species_ID, drop = TRUE, scales = "free", space = "free", labeller = labeller(Species_ID = species.labels))+
+  guides(col = FALSE)
+
+#--- patchwork to bring the two plots together
+mapped_species_lifestage +
+  mapped_species_duplicates +
+  plot_layout(ncol=1)
+
+ggsave("Figure_S2.pdf",useDingbats=FALSE)
+ggsave("Figure_S2.png")
+
+
+
+# New supplementary figure 3 - dm
+#--- box plot showing mapped reads per lifestage per extraction kit for H. contortus and S. mansoni
+dm_mapped_kit_lifestage <- ggplot(dm,aes(x=Lifestage_ID,y=mapped_read_pc,col=Extraction_kit_ID,fill=Extraction_kit_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(-10,100)+
+  labs(title="A",
+       x="Life stage",
+       y="Mapped on-target reads (%)",
+       fill="Extraction kit")+
+  guides(col = FALSE)+
+  theme_bw()+
+  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(Species_ID = species.labels))
+
+#--- box plot showing duplicate reads per lifestage per extraction kit for H. contortus and S. mansoni  
+dm_duplicates_kit_lifestage <- ggplot(dm,aes(x=Lifestage_ID,y=duplicate_reads_pc,col=Extraction_kit_ID,fill=Extraction_kit_ID))+
+  geom_boxplot(position = position_dodge(preserve = "single"),alpha=0.5)+
+  ylim(0,100)+
+  labs(title="B",
+       x="Life stage",
+       y="Mapped on-target reads (%)",
+       fill="Extraction kit")+
+  theme_bw()+
+  facet_grid(.~Species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(Species_ID = species.labels))+
+  guides(col = FALSE)
+
+dm_conc_v_mapped_x_species_lifestage <- ggplot(dm,aes(log10(LIB_QC_ng_ul),mapped_read_pc,col=duplicate_reads_pc))+
+  geom_point()+
+  ylim(0,100)+
+  labs(title="C",
+       x="Sequencing library concentration (log10[ng/ul])",
+       y="Mapped on-target reads (%)",
+       col="Duplicate reads (%)")+
+  theme_bw()+scale_color_viridis_c()+
+  geom_vline(xintercept=log10(0.25),col="grey60",linetype='dashed')+
+  facet_grid(.~Species_ID,labeller = labeller(Species_ID = species.labels))
+
+dm_conc_v_mapped_x_species_contam <- ggplot(dm, aes(log10(LIB_QC_ng_ul),mapped_read_pc,col=100-kraken_unassigned_pc))+
+  geom_point()+
+  ylim(0,100)+
+  labs(title="D",
+       x="Sequencing library concentration (log10[ng/ul])",
+       y="Mapped on-target reads (%)",
+       col="Contamination (%)",
+       shape="Life stage")+
+  theme_bw()+scale_color_viridis_c()+
+  geom_vline(xintercept=log10(0.25),col="grey60",linetype='dashed')+
+  facet_grid(.~Species_ID,labeller = labeller(Species_ID = species.labels))+
+  guides(shape = FALSE)
+
+#--- patchwork to bring the two plots together
+dm_mapped_kit_lifestage +
+  dm_duplicates_kit_lifestage +
+  dm_conc_v_mapped_x_species_lifestage +
+  dm_conc_v_mapped_x_species_contam +
+  plot_layout(ncol=2)
+
+ggsave("Figure_S3.pdf",useDingbats=FALSE)
+ggsave("Figure_S3.png")
+```
