@@ -518,7 +518,7 @@ duplicates_kit_lifestage <- ggplot(hc_sm,aes(x=lifestage_ID,y=duplicate_reads_pe
   ylim(0,100)+
   labs(title="B",
        x="Life stage",
-       y="Mapped on-target reads (%)",
+       y="Duplicate reads (%)",
        fill="Extraction kit")+
   theme_bw()+
   facet_grid(.~species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(species_ID = species.labels))+
@@ -591,7 +591,7 @@ dm_duplicates_kit_lifestage <- ggplot(dm,aes(x=lifestage_ID,y=duplicate_reads_pe
   ylim(0,100)+
   labs(title="B",
        x="Life stage",
-       y="Mapped on-target reads (%)",
+       y="Duplicate reads (%)",
        fill="Extraction kit")+
   theme_bw()+
   facet_grid(.~species_ID,drop = TRUE,scales = "free", space = "free",labeller = labeller(species_ID = species.labels))+
