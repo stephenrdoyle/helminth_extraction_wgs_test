@@ -5,6 +5,7 @@
 1. [Project setup](#setup)
 2. [Mapping](#mapping)
 3. [Analysis](#analysis)
+3. [Revison](#revision)
 
 
 ## 00 - Project overview
@@ -340,7 +341,7 @@ while read NAME; do name=$(echo $NAME | cut -f16 -d"/") ; data=$(cat $NAME | hea
 
 
 
-
+## 04 - Revision <a name="revision"></a>
 # Revision of data and figures for helminth extraction manuscript
 
 ## Setup the working environment and import some data
